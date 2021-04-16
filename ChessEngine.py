@@ -19,16 +19,6 @@ class GameState():
             ["wp", "--", "wp", "wp", "--", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "--", "--", "wR"],
         ]
-        self.board = [
-            ["--", "--", "--", "--", "bK", "--", "--", "--"],
-            ["--", "--", "--", "bp", "bp", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "wQ", "--", "--", "--"],
-            ["--", "--", "--", "--", "wK", "--", "--", "--"],
-        ]
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
 
@@ -41,7 +31,6 @@ class GameState():
         self.enPassantPossible = ()  # coordinates of squares where en passant is possible
         self.enPassantPossibleLog = [self.enPassantPossible]
         self.currentCastlingRight = CastleRights(True, True, True, True)
-        self.currentCastlingRight = CastleRights(False, False, False, False)
         self.castleRightsLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks,
                                              self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
 
