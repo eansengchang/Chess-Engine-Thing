@@ -241,6 +241,3 @@ def scoreBoard(gs):
 
     # print("Score: {}".format(score))
     return score
-
-
-endGame()
