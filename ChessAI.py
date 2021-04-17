@@ -85,6 +85,16 @@ def endGame():
         [-30, -30, 0, 0, 0, 0, -30, -30],
         [-50, -30, -30, -30, -30, -30, -30, -50]
     ]
+    pieceTable["R"] = [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ]
     ENDGAME = True
     DEPTH = 3
 
@@ -108,14 +118,11 @@ def findBestMove(gs, validMoves):
     nextMove = None
     counter = 0
 
-    material = 0
+    pieces = 0
     for pieceType in gs.board:
-        if pieceType[0] == "w":
-            material += pieceScore[pieceType[1]] * len(gs.board[pieceType])
-        else:
-            material += pieceScore[pieceType[1]] * len(gs.board[pieceType])
+        pieces += len(gs.board[pieceType])
 
-    if material < 1500 and not ENDGAME:
+    if pieces < 10 and not ENDGAME:
         endGame()
 
     if len(validMoves) == 1:
@@ -127,55 +134,6 @@ def findBestMove(gs, validMoves):
         DEPTH -= 2
     # print(counter)
     return nextMove
-
-
-def findMoveMinMax(gs, validMoves, depth, whiteToMove):
-    global nextMove, counter
-    counter += 1
-    if depth == 0:
-        return scoreBoard(gs)
-    if whiteToMove:
-        maxScore = -CHECKMATE
-        for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, False)
-            if score > maxScore:
-                maxScore = score
-                if depth == DEPTH:
-                    nextMove = move
-            gs.undoMove()
-        return maxScore
-
-    else:
-        minScore = CHECKMATE
-        for move in validMoves:
-            gs.makeMove(move)
-            nextMoves = gs.getValidMoves()
-            score = findMoveMinMax(gs, nextMoves, depth - 1, True)
-            if score < minScore:
-                minScore = score
-                if depth == DEPTH:
-                    nextMove = move
-            gs.undoMove()
-        return minScore
-
-
-def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
-    global nextMove
-    if depth == 0:
-        return turnMultiplier * scoreBoard(gs)
-    maxScore = -CHECKMATE
-    for move in validMoves:
-        gs.makeMove(move)
-        nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMax(gs, nextMoves, depth - 1, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
-            if depth == DEPTH:
-                nextMove = move
-        gs.undoMove()
-    return maxScore
 
 
 def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier, start):
@@ -194,12 +152,11 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
         if len(list(filter(onlyCapturesandChecks, validMoves))) != 0:
             validMoves = list(filter(onlyCapturesandChecks, validMoves))
 
-    # validMoves.sort(key=sortMoves)
     elif len(validMoves) == 0 and gs.inCheck():
         return -CHECKMATE
     elif (depth < DEPTH - 1 and not ENDGAME) or len(validMoves) == 0 or depth == 0:
         return turnMultiplier * scoreBoard(gs)
-
+    validMoves.sort(key=sortMoves)
     maxScore = -CHECKMATE
     for move in validMoves:
         # print("DEPTH {}: {}".format(depth, move.getChessNotation()))
@@ -214,7 +171,7 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
 
                 print("Evaluated {}: {}".format(move.getChessNotation(), turnMultiplier * maxScore / 100))
 
-        if maxScore > alpha:  # pruning happens--
+        if maxScore > alpha:  # pruning happens
             alpha = maxScore
         if beta <= alpha:
             break
@@ -272,7 +229,7 @@ def scoreBoard(gs):
                 score += pieceScore[pieceType[1]] + pieceTable[pieceType[1]][piece[0]][piece[1]]
         else:
             for piece in gs.board[pieceType]:
-                score -= pieceScore[pieceType[1]] + pieceTable[pieceType[1]][7-piece[0]][piece[1]]
+                score -= pieceScore[pieceType[1]] + pieceTable[pieceType[1]][7 - piece[0]][piece[1]]
 
     if ENDGAME:
         if score > 0:
