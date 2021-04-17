@@ -138,12 +138,12 @@ def highlightSquare(screen, gs, validMoves, sqSelected):
         if gs.board[r][c][0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQ_SIZE, SQ_SIZE))
-            # s.set_alpha(1800)
-            # s.fill(p.Color(106,111,65))
-            # screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
-            # highlight moves from that square
-            s.fill(p.Color(106, 111, 65))
             s.set_alpha(150)
+            s.fill(p.Color(106,111,65))
+            screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
+            # highlight moves from that square
+            # s.fill(p.Color(106, 111, 65))
+            # s.set_alpha(150)
             for move in validMoves:
                 if move.startRow == r and move.startCol == c:
                     screen.blit(s, (SQ_SIZE * move.endCol, SQ_SIZE * move.endRow))

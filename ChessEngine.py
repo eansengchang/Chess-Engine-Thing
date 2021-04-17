@@ -10,15 +10,25 @@ class GameState():
         # first character is the color of the piece and the second character is the type of the piece
         # "--" represents no piece
         self.board = [
-            ["bR", "--", "bB", "bQ", "bK", "--", "bN", "bR"],
-            ["bp", "bp", "bp", "bp", "--", "bp", "bp", "bp"],
-            ["--", "--", "bN", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "bp", "--", "--", "--"],
-            ["--", "bB", "wB", "--", "wp", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "wN", "--", "--"],
-            ["wp", "--", "wp", "wp", "--", "wp", "wp", "wp"],
-            ["wR", "wN", "wB", "wQ", "wK", "--", "--", "wR"],
+            ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+            ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "wp", "wp", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
+        # self.board = [
+        #     ["--", "--", "--", "--", "--", "bK", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "wK", "--"],
+        #     ["--", "wQ", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        # ]
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
 
@@ -31,6 +41,7 @@ class GameState():
         self.enPassantPossible = ()  # coordinates of squares where en passant is possible
         self.enPassantPossibleLog = [self.enPassantPossible]
         self.currentCastlingRight = CastleRights(True, True, True, True)
+        # self.currentCastlingRight = CastleRights(False, False, False, False)
         self.castleRightsLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks,
                                              self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
 
