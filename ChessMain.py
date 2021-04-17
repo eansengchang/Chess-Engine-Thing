@@ -41,7 +41,7 @@ def main():
     running = True
     sqSelected = ()  # keep track of last click of user. tuple: (row, col)
     playerClicks = []  # keep tracks of player clicks, two tuples
-    playerOne = True  # if a human is playing white, this will be true, if its false, the computer will play white
+    playerOne = False  # if a human is playing white, this will be true, if its false, the computer will play white
     playerTwo = False  # if a human is playing black, this will be true, if its false, the computer will play black
     gameOver = False
     while running:
@@ -137,7 +137,7 @@ def highlightSquare(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
 
-        if gs.pieceIn((r, c))[0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
+        if gs.board[r][c][0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQ_SIZE, SQ_SIZE))
             s.set_alpha(150)
@@ -174,7 +174,7 @@ def drawBoard(screen):
 def drawPieces(screen, gs):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            piece = gs.pieceIn((r, c))
+            piece = gs.board[r][c]
             if piece != "--":  # if piece is not an empty square
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
