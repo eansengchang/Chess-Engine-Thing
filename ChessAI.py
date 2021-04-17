@@ -6,7 +6,7 @@ import numpy
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "p": 100}
 CHECKMATE = 100000
 STALEMATE = 0
-DEPTH = 5
+DEPTH = 2
 ENDGAME = False
 
 pieceTable = {
@@ -15,7 +15,7 @@ pieceTable = {
         [80, 80, 80, 80, 80, 80, 80, 80],
         [40, 40, 40, 40, 40, 40, 40, 40],
         [10, 10, 10, 30, 30, 10, 10, 10],
-        [5, 10, 10, 20, 20, 10, 10, 5],
+        [5, 10, 15, 22, 22, 15, 10, 5],
         [5, -5, -10, -5, -5, -10, -5, 5],
         [5, 10, 10, -20, -20, 10, 10, 5],
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -103,8 +103,7 @@ def findRandomMove(validMoves):
     return validMoves[random.randint(0, len(validMoves) - 1)]
 
 
-def sortMoves(move):
-    return move.pieceCaptured != "--"
+
 
 
 '''
@@ -113,7 +112,6 @@ First recursive call
 
 
 def findBestMove(gs, validMoves):
-    random.shuffle(validMoves)
     global nextMove, counter, DEPTH
     nextMove = None
     counter = 0
@@ -132,30 +130,62 @@ def findBestMove(gs, validMoves):
                                      time.time())
     if score == CHECKMATE:
         DEPTH -= 2
-    # print(counter)
+    print(counter)
     return nextMove
 
 
-def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier, start):
-    global nextMove, counter
-    counter += 1
 
-    def onlyCapturesandChecks(move):
-        if len(gs.moveLog) == 0:
-            return False
+def sortMovesGS(gs, move):
+    num = 0
+    if move.pieceCaptured != "--":
+        num += pieceScore[move.pieceCaptured[1]] - pieceScore[move.pieceMoved[1]]
+    num += 1 if gs.squareUnderAttack(move.endRow, move.endCol) else 0
+    return -num
+
+def searchAllCaptures(gs ,alpha, beta, turnMultiplier):
+    global counter
+    counter += 1
+    evaluation = turnMultiplier * scoreBoard(gs)
+    if evaluation >= beta:
+        return beta
+
+    alpha = max(alpha, evaluation)
+    allMoves = gs.getValidMoves()
+
+    def sortMoves(move):
+        return sortMovesGS(gs, move)
+
+    def checkCaptures(move):
         gs.makeMove(move)
         flag = move.pieceCaptured != "--" or gs.inCheck()
         gs.undoMove()
         return flag
 
-    if depth == DEPTH - 2 and gs.moveLog[-1].pieceCaptured != "--" and not ENDGAME:
-        if len(list(filter(onlyCapturesandChecks, validMoves))) != 0:
-            validMoves = list(filter(onlyCapturesandChecks, validMoves))
+    captureMoves = list(filter(checkCaptures, allMoves))
+    captureMoves.sort(key=sortMoves)
+    for move in captureMoves:
+        gs.makeMove(move)
+        evaluation = -searchAllCaptures(gs, -beta, -alpha, -turnMultiplier)
+        gs.undoMove()
 
-    elif len(validMoves) == 0 and gs.inCheck():
-        return -CHECKMATE
-    elif (depth < DEPTH - 1 and not ENDGAME) or len(validMoves) == 0 or depth == 0:
-        return turnMultiplier * scoreBoard(gs)
+        if evaluation >= beta:
+            return beta
+        alpha = max(alpha, evaluation)
+
+    return alpha
+
+def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier, start):
+    global nextMove, counter
+    counter += 1
+
+    if len(validMoves) == 0:
+        return scoreBoard(gs) * turnMultiplier
+    elif depth == 0:
+        return searchAllCaptures(gs, alpha, beta, turnMultiplier)
+
+    def sortMoves(move):
+        return sortMovesGS(gs, move)
+
     validMoves.sort(key=sortMoves)
     maxScore = -CHECKMATE
     for move in validMoves:
