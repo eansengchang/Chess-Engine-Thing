@@ -41,7 +41,7 @@ def main():
     running = True
     sqSelected = ()  # keep track of last click of user. tuple: (row, col)
     playerClicks = []  # keep tracks of player clicks, two tuples
-    playerOne = False  # if a human is playing white, this will be true, if its false, the computer will play white
+    playerOne = True  # if a human is playing white, this will be true, if its false, the computer will play white
     playerTwo = False  # if a human is playing black, this will be true, if its false, the computer will play black
     gameOver = False
     while running:

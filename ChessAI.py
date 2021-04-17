@@ -6,7 +6,7 @@ import numpy
 pieceScore = {"K": 0, "Q": 900, "R": 500, "B": 330, "N": 320, "p": 100}
 CHECKMATE = 100000
 STALEMATE = 0
-DEPTH = 2
+DEPTH = 1
 ENDGAME = False
 
 pieceTable = {
@@ -77,13 +77,13 @@ def endGame():
     global DEPTH, ENDGAME
     pieceTable["K"] = [
         [-50, -40, -30, -20, -20, -30, -40, -50],
-        [-30, -20, -10, 0, 0, -10, -20, -30],
+        [-40, -20, -10, 0, 0, -10, -20, -40],
         [-30, -10, 20, 30, 30, 20, -10, -30],
         [-30, -10, 30, 30, 30, 30, -10, -30],
         [-30, -10, 30, 30, 30, 30, -10, -30],
         [-30, -10, 20, 30, 30, 20, -10, -30],
-        [-30, -30, 0, 0, 0, 0, -30, -30],
-        [-50, -30, -30, -30, -30, -30, -30, -50]
+        [-40, -30, 0, 0, 0, 0, -30, -40],
+        [-50, -40, -30, -30, -30, -30, -40, -50]
     ]
     pieceTable["R"] = [
         [0, 0, 0, 0, 0, 0, 0, 0],
@@ -178,6 +178,9 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
     global nextMove, counter
     counter += 1
 
+    if len(validMoves) == 0 and gs.inCheck():
+        return -CHECKMATE
+
     if len(validMoves) == 0:
         return scoreBoard(gs) * turnMultiplier
     elif depth == 0:
@@ -185,6 +188,8 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
 
     def sortMoves(move):
         return sortMovesGS(gs, move)
+
+
 
     validMoves.sort(key=sortMoves)
     maxScore = -CHECKMATE

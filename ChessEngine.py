@@ -2,6 +2,7 @@
 For storing all the information about the current state of the chess game.
 Also responsible for determining valid moves.
 """
+import random
 
 
 class GameState():
@@ -34,9 +35,10 @@ class GameState():
             "wp": [(6, 0), (6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7)]
         }
         # self.board = {
-        #     "bK": [(3, 3)],
-        #     "wR": [(0, 6), (0, 4)],
-        #     "wK": [(7, 7)]
+        #     "bK": [(3, 5)],
+        #     "wQ": [(6, 6)],
+        #     "wK": [(7, 7)],
+
         # }
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
