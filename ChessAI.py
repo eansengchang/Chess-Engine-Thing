@@ -79,14 +79,14 @@ def endGame():
         [-50, -40, -30, -20, -20, -30, -40, -50],
         [-30, -20, -10, 0, 0, -10, -20, -30],
         [-30, -10, 20, 30, 30, 20, -10, -30],
-        [-30, -10, 30, 40, 40, 30, -10, -30],
-        [-30, -10, 30, 40, 40, 30, -10, -30],
+        [-30, -10, 30, 30, 30, 30, -10, -30],
+        [-30, -10, 30, 30, 30, 30, -10, -30],
         [-30, -10, 20, 30, 30, 20, -10, -30],
         [-30, -30, 0, 0, 0, 0, -30, -30],
         [-50, -30, -30, -30, -30, -30, -30, -50]
     ]
     ENDGAME = True
-    DEPTH = 6
+    DEPTH = 3
 
 
 def findRandomMove(validMoves):
@@ -109,10 +109,11 @@ def findBestMove(gs, validMoves):
     counter = 0
 
     material = 0
-    for r in range(len(gs.board)):
-        for c in range(len(gs.board[r])):
-            if gs.board[r][c] != "--":
-                material += pieceScore[gs.board[r][c][1]]
+    for pieceType in gs.board:
+        if pieceType[0] == "w":
+            material += pieceScore[pieceType[1]] * len(gs.board[pieceType])
+        else:
+            material += pieceScore[pieceType[1]] * len(gs.board[pieceType])
 
     if material < 1500 and not ENDGAME:
         endGame()
@@ -201,7 +202,7 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
 
     maxScore = -CHECKMATE
     for move in validMoves:
-        print("DEPTH {}: {}".format(depth, move.getChessNotation()))
+        # print("DEPTH {}: {}".format(depth, move.getChessNotation()))
         gs.makeMove(move)
         nextMoves = gs.getValidMoves()
         score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth - 1, -beta, -alpha, -turnMultiplier, start)
@@ -220,6 +221,27 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
     return maxScore
 
 
+def forceKingCorner(friendlyKingPosition, opponentKingSquare):
+    evaluation = 0
+    opponentKingRank = opponentKingSquare[0]
+    opponentKingFile = opponentKingSquare[1]
+
+    opponentKingDistToCenterFile = max(3 - opponentKingFile, opponentKingFile - 4)
+    opponentKingDistToCenterRank = max(3 - opponentKingRank, opponentKingRank - 4)
+    evaluation += opponentKingDistToCenterRank + opponentKingDistToCenterFile
+
+    friendKingRank = friendlyKingPosition[0]
+    friendlyKingFile = friendlyKingPosition[1]
+
+    dstBetweenKingsRank = abs(friendKingRank - opponentKingRank)
+    dstBetweenKingsFile = abs(friendlyKingFile - opponentKingFile)
+    dstBetweenKings = abs(dstBetweenKingsRank + dstBetweenKingsFile)
+    evaluation += (14 - dstBetweenKings)
+
+    # print(evaluation * 10)
+    return evaluation * 10
+
+
 '''
 positive score is good for white, negative is good for black
 '''
@@ -236,13 +258,27 @@ def scoreBoard(gs):
         return 0
 
     score = 0
-    for r in range(len(gs.board)):
-        for c in range(len(gs.board[r])):
-            square = gs.board[r][c]
-            if square[0] == "w":
-                score += pieceScore[square[1]] + pieceTable[square[1]][r][c]
-            elif square[0] == "b":
-                score -= pieceScore[square[1]] + pieceTable[square[1]][7 - r][c]
+    # for r in range(len(gs.board)):
+    #     for c in range(len(gs.board[r])):
+    #         square = gs.board[r][c]
+    #         if square[0] == "w":
+    #             score += pieceScore[square[1]] + pieceTable[square[1]][r][c]
+    #         elif square[0] == "b":
+    #             score -= pieceScore[square[1]] + pieceTable[square[1]][7 - r][c]
+
+    for pieceType in gs.board:
+        if pieceType[0] == "w":
+            for piece in gs.board[pieceType]:
+                score += pieceScore[pieceType[1]] + pieceTable[pieceType[1]][piece[0]][piece[1]]
+        else:
+            for piece in gs.board[pieceType]:
+                score -= pieceScore[pieceType[1]] + pieceTable[pieceType[1]][7-piece[0]][piece[1]]
+
+    if ENDGAME:
+        if score > 0:
+            score += forceKingCorner(gs.whiteKingLocation, gs.blackKingLocation)
+        else:
+            score -= forceKingCorner(gs.blackKingLocation, gs.whiteKingLocation)
 
     # print("Score: {}".format(score))
     return score

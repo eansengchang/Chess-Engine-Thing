@@ -65,7 +65,7 @@ def main():
                         playerClicks.append(sqSelected)
                     # was that the users second click?
                     if len(playerClicks) == 2:
-                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs)
                         # print(move.getChessNotation())
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
@@ -106,7 +106,7 @@ def main():
         if moveMade:
             if animate:
                 if len(gs.moveLog) != 0:
-                    animateMove(gs.moveLog[-1], screen, gs.board, clock)
+                    animateMove(gs.moveLog[-1], screen, gs, clock)
                     # end = " " if (gs.moveLog[-1].pieceMoved[0] == "w") else "\n"
                     # print(gs.moveLog[-1].getChessNotation(), end=end)
             validMoves = gs.getValidMoves()
@@ -127,19 +127,21 @@ def main():
         clock.tick(MAX_FPS)
         p.display.flip()
 
+
 '''
 Highlight square selected and legal moves possible
 '''
+
 
 def highlightSquare(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
 
-        if gs.board[r][c][0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
+        if gs.pieceIn((r, c))[0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQ_SIZE, SQ_SIZE))
             s.set_alpha(150)
-            s.fill(p.Color(106,111,65))
+            s.fill(p.Color(106, 111, 65))
             screen.blit(s, (c * SQ_SIZE, r * SQ_SIZE))
             # highlight moves from that square
             # s.fill(p.Color(106, 111, 65))
@@ -157,7 +159,7 @@ Responsible for all graphics in a current game state
 def drawGameState(screen, gs, validMoves, sqSelected):
     drawBoard(screen)  # draw squares on a board
     highlightSquare(screen, gs, validMoves, sqSelected)
-    drawPieces(screen, gs.board)  # draw pieces on top of the squares
+    drawPieces(screen, gs)  # draw pieces on top of the squares
 
 
 def drawBoard(screen):
@@ -169,10 +171,10 @@ def drawBoard(screen):
             p.draw.rect(screen, color, p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-def drawPieces(screen, board):
+def drawPieces(screen, gs):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            piece = board[r][c]
+            piece = gs.pieceIn((r, c))
             if piece != "--":  # if piece is not an empty square
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
@@ -182,7 +184,7 @@ animation of chess moves
 '''
 
 
-def animateMove(move, screen, board, clock):
+def animateMove(move, screen, gs, clock):
     global colors
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
@@ -191,7 +193,7 @@ def animateMove(move, screen, board, clock):
     for frame in range(frameCount + 1):
         r, c = (move.startRow + dR * frame / frameCount, move.startCol + dC * frame / frameCount)
         drawBoard(screen)
-        drawPieces(screen, board)
+        drawPieces(screen, gs)
         # erase the piece moved from the ending square
         color = colors[((move.endRow + move.endCol) % 2)]
         endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
@@ -199,7 +201,7 @@ def animateMove(move, screen, board, clock):
         # draw the captured piece
         if move.pieceCaptured != "--":
             if move.isEnpassantMove:
-                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == "b" else move.endRow -1
+                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == "b" else move.endRow - 1
                 endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
         # draw the actual movement
