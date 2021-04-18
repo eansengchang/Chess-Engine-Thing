@@ -137,7 +137,7 @@ def highlightSquare(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
 
-        if gs.board[r][c][0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
+        if gs.pieceIn((r, c))[0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQ_SIZE, SQ_SIZE))
             s.set_alpha(150)
@@ -174,7 +174,7 @@ def drawBoard(screen):
 def drawPieces(screen, gs):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            piece = gs.board[r][c]
+            piece = gs.pieceIn((r, c))
             if piece != "--":  # if piece is not an empty square
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
