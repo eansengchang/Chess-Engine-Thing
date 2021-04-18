@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -8,16 +9,17 @@ CHECKMATE = 100000
 STALEMATE = 0
 DEPTH = 1
 ENDGAME = False
+MIDDLEGAME = False
 
 pieceTable = {
     "p": [
         [0, 0, 0, 0, 0, 0, 0, 0],
-        [80, 80, 80, 80, 80, 80, 80, 80],
-        [40, 40, 40, 40, 40, 40, 40, 40],
-        [10, 10, 10, 30, 30, 10, 10, 10],
-        [5, 10, 15, 20, 20, 10, 10, 5],
-        [5, 0, 5, 5, 5, -5, 0, 5],
-        [5, 5, 0, -5, -5, 5, 5, 5],
+        [50, 50, 50, 50, 50, 50, 50, 50],
+        [10, 10, 20, 30, 30, 20, 10, 10],
+        [5, 5, 10, 25, 25, 10, 5, 5],
+        [0, 0, 0, 20, 20, 0, 0, 0],
+        [5, -5, -10, 0, 0, -10, -5, 5],
+        [5, 10, 10, -20, -20, 10, 10, 5],
         [0, 0, 0, 0, 0, 0, 0, 0]
     ],
     "N": [
@@ -48,7 +50,7 @@ pieceTable = {
         [-5, 0, 0, 0, 0, 0, 0, -5],
         [-5, 0, 0, 0, 0, 0, 0, -5],
         [-5, 0, 0, 0, 0, 0, 0, -5],
-        [0, 0, 0, 5, 5, 0, 0, 0]
+        [-10, 0, 0, 5, 5, 0, 0, -10]
     ],
     "Q": [
         [-20, -10, -10, -5, -5, -10, -10, -20],
@@ -68,22 +70,30 @@ pieceTable = {
         [-20, -30, -30, -40, -40, -30, -30, -20],
         [-10, -20, -20, -20, -20, -20, -20, -10],
         [20, 20, 0, 0, 0, 0, 20, 20],
-        [20, 30, 10, 0, 0, 10, 30, 20]
+        [20, 30, 10, -1, -1, 10, 30, 20]
     ]
 }
 
 
 def endGame():
-    global DEPTH, ENDGAME
+    global DEPTH, ENDGAME, MIDDLEGAME
     pieceTable["K"] = [
-        [-50, -40, -30, -20, -20, -30, -40, -50],
-        [-40, -20, -10, 0, 0, -10, -20, -40],
-        [-30, -10, 20, 30, 30, 20, -10, -30],
-        [-30, -10, 30, 30, 30, 30, -10, -30],
-        [-30, -10, 30, 30, 30, 30, -10, -30],
-        [-30, -10, 20, 30, 30, 20, -10, -30],
-        [-40, -30, 0, 0, 0, 0, -30, -40],
-        [-50, -40, -30, -30, -30, -30, -40, -50]
+        # [-50, -40, -30, -20, -20, -30, -40, -50],
+        # [-40, -20, -10, 0, 0, -10, -20, -40],
+        # [-30, -10, 20, 30, 30, 20, -10, -30],
+        # [-30, -10, 30, 30, 30, 30, -10, -30],
+        # [-30, -10, 30, 30, 30, 30, -10, -30],
+        # [-30, -10, 20, 30, 30, 20, -10, -30],
+        # [-40, -30, 0, 0, 0, 0, -30, -40],
+        # [-50, -40, -30, -30, -30, -30, -40, -50]
+        [0, 0, 0, -1, -1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [-1, 0, 0, 0, 0, 0, 0, -1],
+        [-1, 0, 0, 0, 0, 0, 0, -1],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, -1, -1, 0, 0, 0],
     ]
     pieceTable["R"] = [
         [0, 0, 0, 0, 0, 0, 0, 0],
@@ -96,7 +106,24 @@ def endGame():
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
     ENDGAME = True
-    DEPTH = 4
+    MIDDLEGAME = False
+    DEPTH = 2
+
+
+def middleGame():
+    global DEPTH, MIDDLEGAME
+    MIDDLEGAME = True
+    DEPTH = 1
+    pieceTable["K"] = [
+        [-50, -40, -30, -20, -20, -30, -40, -50],
+        [-40, -20, -10, 0, 0, -10, -20, -40],
+        [-30, -10, 20, 30, 30, 20, -10, -30],
+        [-30, -10, 30, 30, 30, 30, -10, -30],
+        [-30, -10, 30, 30, 30, 30, -10, -30],
+        [-30, -10, 20, 30, 30, 20, -10, -30],
+        [-40, -30, 0, 0, 0, 0, -30, -40],
+        [-50, -40, -30, -30, -30, -30, -40, -50]
+    ]
 
 
 def findRandomMove(validMoves):
@@ -122,47 +149,56 @@ def findBestMove(gs, validMoves):
 
     if pieces < 10 and not ENDGAME:
         endGame()
+    elif pieces < 20 and not MIDDLEGAME:
+        middleGame()
 
     if len(validMoves) == 1:
         return validMoves[0]
     # findMoveMinMax(gs, validMoves, DEPTH, gs.whiteToMove)
-    score = findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1,
-                                     time.time())
+    score = findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     if score == CHECKMATE:
         DEPTH -= 2
-    print(counter)
+    # print(counter)
     return nextMove
 
 
 def sortMovesGS(gs, move):
     num = 0
+    # gs.makeMove(move)
     if move.pieceCaptured != "--":
         num += 1
-        num += pieceScore[move.pieceCaptured[1]] - pieceScore[move.pieceMoved[1]]
+        num += pieceScore[move.pieceCaptured[1]] / 100 - pieceScore[move.pieceMoved[1]] / 100
+    # if gs.inCheck():
+    #     num += 2
+    # gs.undoMove()
     return -num
 
 
 def searchAllCaptures(gs, alpha, beta, turnMultiplier):
     global counter
     counter += 1
+    allMoves = gs.getValidMoves()
     evaluation = turnMultiplier * scoreBoard(gs)
     if evaluation >= beta:
         return beta
 
     alpha = max(alpha, evaluation)
-    allMoves = gs.getValidMoves()
 
     def sortMoves(move):
         return sortMovesGS(gs, move)
 
     def checkCaptures(move):
         gs.makeMove(move)
-        flag = move.pieceCaptured != "--" or gs.inCheck()
+        flag = move.pieceCaptured != "--" or move.isPawnPromotion  # or gs.inCheck()
         gs.undoMove()
         return flag
 
-    captureMoves = list(filter(checkCaptures, allMoves))
+    captureMoves = allMoves
+    if len(allMoves) != 1:
+        captureMoves = list(filter(checkCaptures, allMoves))
+
     captureMoves.sort(key=sortMoves)
+    # print(len(captureMoves))
     for move in captureMoves:
         gs.makeMove(move)
         evaluation = -searchAllCaptures(gs, -beta, -alpha, -turnMultiplier)
@@ -175,7 +211,7 @@ def searchAllCaptures(gs, alpha, beta, turnMultiplier):
     return alpha
 
 
-def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier, start):
+def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     global nextMove, counter
     counter += 1
 
@@ -196,7 +232,7 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier,
         # print("DEPTH {}: {}".format(depth, move.getChessNotation()))
         gs.makeMove(move)
         nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth - 1, -beta, -alpha, -turnMultiplier, start)
+        score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth - 1, -beta, -alpha, -turnMultiplier)
         gs.undoMove()
         if score > maxScore:
             maxScore = score
@@ -219,15 +255,20 @@ def forceKingCorner(friendlyKingPosition, opponentKingSquare):
 
     opponentKingDistToCenterFile = max(3 - opponentKingFile, opponentKingFile - 4)
     opponentKingDistToCenterRank = max(3 - opponentKingRank, opponentKingRank - 4)
-    evaluation += 2 * (opponentKingDistToCenterRank + opponentKingDistToCenterFile)
+    evaluation += math.sqrt(2.3 * opponentKingDistToCenterRank + 2 * opponentKingDistToCenterFile)
 
-    friendKingRank = friendlyKingPosition[0]
+    friendlyKingRank = friendlyKingPosition[0]
     friendlyKingFile = friendlyKingPosition[1]
 
-    dstBetweenKingsRank = abs(friendKingRank - opponentKingRank)
+    # if MIDDLEGAME:
+    #     friendlyKingDistToCenterFile = max(3 - friendlyKingFile, friendlyKingFile - 4)
+    #     friendlyKingDistToCenterRank = max(3 - friendlyKingRank, friendlyKingRank - 4)
+    #     evaluation -= (friendlyKingDistToCenterFile + friendlyKingDistToCenterRank) / 3
+
+    dstBetweenKingsRank = abs(friendlyKingRank - opponentKingRank)
     dstBetweenKingsFile = abs(friendlyKingFile - opponentKingFile)
     dstBetweenKings = abs(dstBetweenKingsRank + dstBetweenKingsFile)
-    evaluation += (14 - dstBetweenKings)
+    evaluation += math.sqrt((14 - dstBetweenKings))
 
     # print(evaluation * 10)
     return evaluation * 10
@@ -263,10 +304,8 @@ def scoreBoard(gs):
         else:
             score -= forceKingCorner(gs.blackKingLocation, gs.whiteKingLocation)
 
-    score += 30 if gs.currentCastlingRight.wks else 0
-    score += 30 if gs.currentCastlingRight.wqs else 0
-    score -= 30 if gs.currentCastlingRight.bks else 0
-    score -= 30 if gs.currentCastlingRight.bqs else 0
+    # score += 30 if gs.currentCastlingRight.wks and gs.currentCastlingRight.wqs else 0
+    # score -= 30 if gs.currentCastlingRight.bks and gs.currentCastlingRight.bqs else 0
 
     # print("Score: {}".format(score))
     return score
