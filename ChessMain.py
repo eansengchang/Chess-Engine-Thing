@@ -20,7 +20,7 @@ def loadImages():
     pieces = ["wp", "wR", "wN", "wB", "wK", "wQ", "bp", "bR", "bN", "bB", "bK", "bQ"]
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
-    # note we can access the image by calling a dictionary by saying IMAGES["wp]
+    # note we can access the image by calling a dictionary by saying IMAGES["wp"]
 
 
 '''
@@ -42,7 +42,7 @@ def main():
     sqSelected = ()  # keep track of last click of user. tuple: (row, col)
     playerClicks = []  # keep tracks of player clicks, two tuples
     playerOne = False  # if a human is playing white, this will be true, if its false, the computer will play white
-    playerTwo = False  # if a human is playing black, this will be true, if its false, the computer will play black
+    playerTwo = True  # if a human is playing black, this will be true, if its false, the computer will play black
     gameOver = False
     while running:
         # human turn is true if a human is moving, false if computer is moving
@@ -96,8 +96,7 @@ def main():
         # AI move finder logic
         if not gameOver and not humanTurn:
             AIMove = ChessAI.findBestMove(gs, validMoves)
-            if AIMove == None:
-                # print('Random move...')
+            if AIMove is None:
                 AIMove = ChessAI.findRandomMove(validMoves)
             gs.makeMove(AIMove)
             moveMade = True
@@ -137,7 +136,7 @@ def highlightSquare(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
 
-        if gs.pieceIn((r, c))[0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
+        if gs.board[r][c][0] == ("w" if gs.whiteToMove else "b"):  # sqSelected is a piece that can be moved
             # highlight selected square
             s = p.Surface((SQ_SIZE, SQ_SIZE))
             s.set_alpha(150)
@@ -174,7 +173,7 @@ def drawBoard(screen):
 def drawPieces(screen, gs):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            piece = gs.pieceIn((r, c))
+            piece = gs.board[r][c]
             if piece != "--":  # if piece is not an empty square
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
