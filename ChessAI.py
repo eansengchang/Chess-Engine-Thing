@@ -147,10 +147,10 @@ def findBestMove(gs, validMoves):
             if col != "--":
                 pieces += 1
 
+    # if pieces < 20 and not MIDDLEGAME:
+    #     middleGame()
     if pieces < 10 and not ENDGAME:
         endGame()
-    elif pieces < 20 and not MIDDLEGAME:
-        middleGame()
 
     if len(validMoves) == 1:
         return validMoves[0]
@@ -255,7 +255,7 @@ def forceKingCorner(friendlyKingPosition, opponentKingSquare):
 
     opponentKingDistToCenterFile = max(3 - opponentKingFile, opponentKingFile - 4)
     opponentKingDistToCenterRank = max(3 - opponentKingRank, opponentKingRank - 4)
-    evaluation += math.sqrt(2.3 * opponentKingDistToCenterRank + 2 * opponentKingDistToCenterFile)
+    evaluation += math.sqrt(2.2 * opponentKingDistToCenterRank + 2 * opponentKingDistToCenterFile)
 
     friendlyKingRank = friendlyKingPosition[0]
     friendlyKingFile = friendlyKingPosition[1]
