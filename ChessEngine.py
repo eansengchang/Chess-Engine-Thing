@@ -20,19 +20,20 @@ class GameState():
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
         # self.board = [
-        #     ["bR", "bN", "--", "bQ", "--", "bR", "bK", "--"],
-        #     ["bp", "bB", "--", "--", "bB", "bp", "bp", "bp"],
-        #     ["--", "--", "--", "--", "bp", "--", "--", "--"],
-        #     ["--", "bp", "bp", "--", "wp", "--", "--", "--"],
-        #     ["--", "wp", "bp", "wp", "wN", "--", "wQ", "--"],
-        #     ["--", "--", "wB", "--", "--", "--", "wp", "--"],
-        #     ["wp", "--", "--", "--", "--", "wp", "wB", "wp"],
-        #     ["wR", "--", "--", "--", "--", "wR", "wK", "--"],
+        #     ["bK", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "wQ", "wK", "--", "--", "--"],
         # ]
+        self.whiteToMove = True
+        self.makeFEN("r1bqk1nr/pppp1ppp/2n5/2b1p3/1PB1P3/5N2/P1PP1PPP/RNBQK2R b KQkq - 0 4")
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
 
-        self.whiteToMove = True
         self.moveLog = []
         self.whiteKingLocation = (7, 4)
         self.blackKingLocation = (0, 4)
@@ -384,6 +385,36 @@ get all the possible pawn moves located at the row, column and add these moves t
             if not self.squareUnderAttack(r, c - 1) and not self.squareUnderAttack(r, c - 2):
                 moves.append(Move((r, c), (r, c - 2), self, isCastleMove=True))
 
+    def makeFEN(self, fen):
+        board = [[], [], [], [], [], [], [], []]
+        pieceOf = {
+            "r": "bR",
+            "n": "bN",
+            "b": "bB",
+            "k": "bK",
+            "q": "bQ",
+            "p": "bp",
+            "R": "wR",
+            "N": "wN",
+            "B": "wB",
+            "K": "wK",
+            "Q": "wQ",
+            "P": "wp",
+
+        }
+        fen = fen.split(" ")
+        fen[0] = fen[0].split("/")
+        for i in range(8):
+            for k in fen[0][i]:
+                if k.isdigit():
+                    for l in range(int(k)):
+                        board[i].append("--")
+                else:
+                    board[i].append(pieceOf[k])
+
+        self.board = board
+        self.whiteToMove = fen[1] == "w"
+
 
 class CastleRights():
     def __init__(self, wks, bks, wqs, bqs):
@@ -409,8 +440,7 @@ class Move():
         self.pieceMoved = gs.board[self.startRow][self.startCol]
         self.pieceCaptured = gs.board[self.endRow][self.endCol]
         # pawn promotion move
-        self.isPawnPromotion = (self.pieceMoved == 'wp' and self.endRow == 0) or (
-                self.pieceMoved == 'bp' and self.endRow == 7)
+        self.isPawnPromotion = self.pieceMoved[1] == "p" and (self.endRow == 0 or self.endRow == 7)
         # en passant
         self.isEnpassantMove = isEnpassantMove
         if self.isEnpassantMove:

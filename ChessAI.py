@@ -18,8 +18,8 @@ pieceTable = {
         [10, 10, 20, 30, 30, 20, 10, 10],
         [5, 5, 10, 25, 25, 10, 5, 5],
         [0, 0, 0, 20, 20, 0, 0, 0],
-        [5, -5, -10, 0, 0, -10, -5, 5],
-        [5, 10, 10, -20, -20, 10, 10, 5],
+        [0, 0, -10, 0, 0, -10, 0, 0],
+        [-1, 0, 0, -20, -20, 0, 0, -1],
         [0, 0, 0, 0, 0, 0, 0, 0]
     ],
     "N": [
@@ -45,12 +45,12 @@ pieceTable = {
     "R": [
         [0, 0, 0, 0, 0, 0, 0, 0],
         [5, 10, 10, 10, 10, 10, 10, 5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-5, 0, 0, 0, 0, 0, 0, -5],
-        [-10, 0, 0, 5, 5, 0, 0, -10]
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [-1, 0, 5, 5, 5, 4, 0, -1]
     ],
     "Q": [
         [-20, -10, -10, -5, -5, -10, -10, -20],
@@ -105,6 +105,16 @@ def endGame():
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
     ]
+    pieceTable["Q"] = [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ]
     ENDGAME = True
     MIDDLEGAME = False
     DEPTH = 2
@@ -113,7 +123,7 @@ def endGame():
 # This is more like the endgame but not completely endgame, king needs to be more active
 def middleGame():
     global DEPTH, MIDDLEGAME
-    pieceTable = {}
+    # pieceTable = {}
     pieceTable["K"] = [
         [-50, -40, -30, -20, -20, -30, -40, -50],
         [-40, -20, -10, 0, 0, -10, -20, -40],
@@ -129,10 +139,20 @@ def middleGame():
         [150, 150, 150, 150, 150, 150, 150, 150],
         [30, 50, 50, 50, 50, 50, 50, 30],
         [20, 40, 40, 40, 40, 40, 40, 20],
-        [10, 0, 0, 20, 20, 0, 0, 10],
-        [0, 10, 10, 10, 10, 10, 10, 10],
+        [10, 20, 20, 20, 20, 20, 20, 10],
+        [10, 10, 10, 10, 10, 10, 10, 10],
         [-20, -10, -10, -10, -10, -10, -10, -20],
         [0, 0, 0, 0, 0, 0, 0, 0]
+    ]
+    pieceTable["R"] = [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
     ]
     MIDDLEGAME = True
     DEPTH = 2
@@ -159,7 +179,7 @@ def findBestMove(gs, validMoves):
             if col != "--":
                 pieces += 1
 
-    if pieces < 20 and not MIDDLEGAME:
+    if pieces < 20 and not MIDDLEGAME and not ENDGAME:
         middleGame()
     if pieces < 10 and not ENDGAME:
         endGame()
@@ -171,6 +191,9 @@ def findBestMove(gs, validMoves):
     if score == CHECKMATE:
         DEPTH -= 2
     # print(counter)
+    if not any(("wQ" in x or "bQ" in x) for x in gs.board):
+        DEPTH = 2
+
     return nextMove
 
 
@@ -204,10 +227,10 @@ def searchAllCaptures(gs, alpha, beta, turnMultiplier):
         return sortMovesGS(gs, move)
 
     def checkCaptures(move):
-        gs.makeMove(move)
+        # gs.makeMove(move)
         # todo when 3 fold repetition is added, fix this
         flag = move.pieceCaptured != "--"  # or move.isPawnPromotion  # or (not ENDGAME and not MIDDLEGAME and gs.inCheck())
-        gs.undoMove()
+        # gs.undoMove()
         return flag
 
     captureMoves = allMoves
