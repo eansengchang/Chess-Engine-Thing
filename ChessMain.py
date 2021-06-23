@@ -5,6 +5,9 @@ Main driver file, responsible for user inputs and handling game state object
 import pygame as p
 from Chess import ChessEngine, ChessAI
 
+# import sys
+# sys.setrecursionlimit(1500)
+
 WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
@@ -42,7 +45,7 @@ def main():
     sqSelected = ()  # keep track of last click of user. tuple: (row, col)
     playerClicks = []  # keep tracks of player clicks, two tuples
     playerOne = False  # if a human is playing white, this will be true, if its false, the computer will play white
-    playerTwo = False  # if a human is playing black, this will be true, if its false, the computer will play black
+    playerTwo = True  # if a human is playing black, this will be true, if its false, the computer will play black
     gameOver = False
     while running:
         # human turn is true if a human is moving, false if computer is moving

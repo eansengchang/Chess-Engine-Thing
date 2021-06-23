@@ -50,7 +50,7 @@ pieceTable = {
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
-        [-1, 0, 5, 5, 5, 4, 0, -1]
+        [-1, 0, 0, 5, 5, 0, 0, -1]
     ],
     "Q": [
         [-20, -10, -10, -5, -5, -10, -10, -20],
@@ -95,16 +95,6 @@ def endGame():
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, -1, -1, 0, 0, 0],
     ]
-    pieceTable["R"] = [
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-    ]
     pieceTable["Q"] = [
         [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0],
@@ -117,7 +107,7 @@ def endGame():
     ]
     ENDGAME = True
     MIDDLEGAME = False
-    DEPTH = 2
+    DEPTH = 3
 
 
 # This is more like the endgame but not completely endgame, king needs to be more active
@@ -137,9 +127,9 @@ def middleGame():
     pieceTable["p"] = [
         [0, 0, 0, 0, 0, 0, 0, 0],
         [150, 150, 150, 150, 150, 150, 150, 150],
-        [30, 50, 50, 50, 50, 50, 50, 30],
+        [50, 80, 80, 80, 80, 80, 80, 50],
         [20, 40, 40, 40, 40, 40, 40, 20],
-        [10, 20, 20, 20, 20, 20, 20, 10],
+        [15, 20, 20, 20, 20, 20, 20, 15],
         [10, 10, 10, 10, 10, 10, 10, 10],
         [-20, -10, -10, -10, -10, -10, -10, -20],
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -179,7 +169,7 @@ def findBestMove(gs, validMoves):
             if col != "--":
                 pieces += 1
 
-    if pieces < 20 and not MIDDLEGAME and not ENDGAME:
+    if pieces < 15 and not MIDDLEGAME and not ENDGAME:
         middleGame()
     if pieces < 10 and not ENDGAME:
         endGame()
@@ -188,8 +178,8 @@ def findBestMove(gs, validMoves):
         return validMoves[0]
     # findMoveMinMax(gs, validMoves, DEPTH, gs.whiteToMove)
     score = findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
-    if score == CHECKMATE:
-        DEPTH -= 2
+    # if score == CHECKMATE:
+    #     DEPTH -= 2
     # print(counter)
     if not any(("wQ" in x or "bQ" in x) for x in gs.board):
         DEPTH = 2
@@ -213,11 +203,14 @@ def sortMovesGS(gs, move):
     return -num  # returns negative because thats just how the stupid sort function works
 
 
-def searchAllCaptures(gs, alpha, beta, turnMultiplier):
+def searchAllCaptures(gs, alpha, beta, turnMultiplier, depth):
     global counter
     counter += 1
     allMoves = gs.getValidMoves()
     evaluation = turnMultiplier * scoreBoard(gs)
+    if evaluation == CHECKMATE or evaluation == -CHECKMATE:
+        evaluation /= depth
+
     if evaluation >= beta:
         return beta
 
@@ -227,9 +220,10 @@ def searchAllCaptures(gs, alpha, beta, turnMultiplier):
         return sortMovesGS(gs, move)
 
     def checkCaptures(move):
+        # checked2 = gs.inCheck()
+
         # gs.makeMove(move)
-        # todo when 3 fold repetition is added, fix this
-        flag = move.pieceCaptured != "--"  # or move.isPawnPromotion  # or (not ENDGAME and not MIDDLEGAME and gs.inCheck())
+        flag = move.pieceCaptured != "--" #or (gs.inCheck() or checked2) or move.isPawnPromotion
         # gs.undoMove()
         return flag
 
@@ -242,7 +236,9 @@ def searchAllCaptures(gs, alpha, beta, turnMultiplier):
     # print(len(captureMoves))
     for move in captureMoves:
         gs.makeMove(move)
-        evaluation = -searchAllCaptures(gs, -beta, -alpha, -turnMultiplier)
+        evaluation = -searchAllCaptures(gs, -beta, -alpha, -turnMultiplier, depth + 1)
+        if evaluation == CHECKMATE or evaluation == -CHECKMATE:
+            evaluation /= depth
         gs.undoMove()
 
         if evaluation >= beta:
@@ -257,13 +253,13 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier)
     counter += 1
 
     if len(validMoves) == 0 and gs.inCheck():
-        return -CHECKMATE
+        return -CHECKMATE / (3-depth)
 
     if len(validMoves) == 0:
-        return scoreBoard(gs) * turnMultiplier
+        return scoreBoard(gs, depth=depth) * turnMultiplier
     # after the depth is reached, go through all the possible captures
     elif depth == 0:
-        return searchAllCaptures(gs, alpha, beta, turnMultiplier)
+        return searchAllCaptures(gs, alpha, beta, turnMultiplier, 1)
 
     def sortMoves(move):
         return sortMovesGS(gs, move)
@@ -326,13 +322,13 @@ positive score is good for white, negative is good for black
 '''
 
 
-def scoreBoard(gs):
+def scoreBoard(gs, depth=0):
     # checks for checkmates and draws
     if gs.checkmate:
         if gs.whiteToMove:
-            return -CHECKMATE
+            return -CHECKMATE / (3-depth)
         else:
-            return CHECKMATE
+            return CHECKMATE / (3-depth)
 
     if gs.stalemate:
         return 0
@@ -354,8 +350,8 @@ def scoreBoard(gs):
         else:
             score -= forceKingCorner(gs.blackKingLocation, gs.whiteKingLocation)
 
-    # score += 30 if gs.currentCastlingRight.wks and gs.currentCastlingRight.wqs else 0
-    # score -= 30 if gs.currentCastlingRight.bks and gs.currentCastlingRight.bqs else 0
+    # score += 20 if gs.currentCastlingRight.wks and gs.currentCastlingRight.wqs else 0
+    # score -= 20 if gs.currentCastlingRight.bks and gs.currentCastlingRight.bqs else 0
 
     # print("Score: {}".format(score))
     return score

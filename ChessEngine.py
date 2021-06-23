@@ -20,31 +20,32 @@ class GameState():
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
         # self.board = [
-        #     ["bK", "--", "--", "--", "--", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "bQ", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "bK", "--", "--", "--"],
         #     ["--", "--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
-        #     ["--", "--", "--", "wQ", "wK", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "wK", "--"],
         # ]
         self.whiteToMove = True
-        self.makeFEN("r1bqk1nr/pppp1ppp/2n5/2b1p3/1PB1P3/5N2/P1PP1PPP/RNBQK2R b KQkq - 0 4")
         self.moveFunctions = {"p": self.getPawnMoves, "R": self.getRookMoves, "N": self.getKnightMoves,
                               "B": self.getBishopMoves, "Q": self.getQueenMoves, "K": self.getKingMoves}
 
         self.moveLog = []
-        self.whiteKingLocation = (7, 4)
-        self.blackKingLocation = (0, 4)
+        self.whiteKingLocation = (7, 6)
+        self.blackKingLocation = (0, 6)
         self.checkmate = False
         self.stalemate = False
         self.enPassantPossible = ()  # coordinates of squares where en passant is possible
         self.enPassantPossibleLog = [self.enPassantPossible]
+        # self.makeFEN("3b1N2/8/3k4/5pp1/8/5K1P/8/8 w - - 0 0")
         self.currentCastlingRight = CastleRights(True, True, True, True)
         # self.currentCastlingRight = CastleRights(False, False, False, False)
         self.castleRightsLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks,
                                              self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
+
 
     '''
     Takes a move as a parameter and executes it, does not work for castling, pawn promotion or en-passant
@@ -410,6 +411,12 @@ get all the possible pawn moves located at the row, column and add these moves t
                     for l in range(int(k)):
                         board[i].append("--")
                 else:
+                    if k == "K":
+                        self.whiteKingLocation = (i, len(board[i]))
+                        print(self.whiteKingLocation)
+                    elif k == "k":
+                        self.blackKingLocation = (i, len(board[i]))
+                        print(self.blackKingLocation)
                     board[i].append(pieceOf[k])
 
         self.board = board
